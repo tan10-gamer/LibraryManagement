@@ -1,0 +1,117 @@
+﻿@page "/users"
+@rendermode InteractiveServer
+@using LibraryManagement.Components.Models
+@using LibraryManagement.Components.Services
+@using LibraryUsers = LibraryManagement.Components.Models.User
+@inject LibraryService LibraryService
+
+<h3>User</h3>
+<h4>@(isEditing ? "Edit User" : "Add User")</h4>
+
+<div class="mb-3">
+    <label>Name:</label>
+    <input class="form-control" @bind="name" />
+</div>
+
+<div class="mb-3">
+    <label>Email:</label>
+    <input class="form-control" @bind="email" />
+</div>
+
+<button class="btn btn-primary" @onclick="SaveUser">
+    @(isEditing ? "Update User" : "Add User")
+</button>
+
+@if (isEditing)
+{
+    <button class="btn btn-secondary" @onclick="CancelEdit">
+        CANCEL
+    </button>
+}
+
+<hr />
+
+<h4>Library Users</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @foreach (LibraryUsers user in LibraryService.Users)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                            @onclick="() => StartEdit(user)">
+                        EDIT
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            @onclick="() => DeleteUser(user.Id)">
+                        DELETE
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private string name = "";
+    private string email = "";
+
+    private int editingUserId;
+    private bool isEditing = false;
+
+    private void SaveUser()
+    {
+        if (string.IsNullOrWhiteSpace(name) ||
+        string.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
+
+        if (isEditing)
+        {
+            LibraryService.EditUser(editingUserId, name, email);
+        }
+        else
+        {
+            LibraryService.AddUser(name, email);
+        }
+
+        CancelEdit();
+    }
+
+    private void StartEdit(LibraryUsers user)
+    {
+        editingUserId = user.Id;
+        name = user.Name;
+        email = user.Email;
+        isEditing = true;
+    }
+
+    private void DeleteUser(int userId)
+    {
+        LibraryService.DeleteUser(userId);
+    }
+
+    private void CancelEdit()
+    {
+        name = "";
+        email = "";
+        editingUserId = 0;
+        isEditing = false;
+    }
+
+}

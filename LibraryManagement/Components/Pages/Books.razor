@@ -1,0 +1,127 @@
+﻿@page "/books"
+@rendermode InteractiveServer
+@using LibraryManagement.Components.Models
+@using LibraryManagement.Components.Services
+@inject LibraryService LibraryService
+
+<h3>Books</h3>
+
+<h4>@(isEditing ? "Edit Book" : "Add Book")</h4>
+
+<div class="mb-3">
+    <label>Title:</label>
+    <input class="form-control" @bind="title" />
+</div>
+
+<div class="mb-3">
+    <label>Author:</label>
+    <input class="form-control" @bind="author" />
+</div>
+
+<div class="mb-3">
+    <label>ISBN:</label>
+    <input class="form-control" @bind="isbn" />
+</div>
+
+<button class="btn btn-primary" @onclick="SaveBook">
+    @(isEditing ? "Update Book" : "Add Book")
+</button>
+
+@if (isEditing)
+{
+    <button class="btn btn-secondary" @onclick="CancelEdit">
+        Cancel
+    </button>
+}
+
+<hr />
+
+<h4>Available Books</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Book book in LibraryService.Books)
+        {
+            <tr>
+                <td>@book.Id</td>
+                <td>@book.Title</td>
+                <td>@book.Author</td>
+                <td>@book.ISBN</td>
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                        @onclick="() => StartEdit(book)">
+                        EDIT
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                        @onclick="() => DeleteBook(book.Id)">
+                        DELETE
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    private string title = "";
+    private string author = "";
+    private string isbn = "";
+
+    private int editingBookId;
+    private bool isEditing = false;
+
+    private void SaveBook()
+    {
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(author) || string.IsNullOrWhiteSpace(isbn))
+        {
+            return;
+        }
+
+        if (isEditing)
+        {
+            LibraryService.EditBook(editingBookId, title, author, isbn);
+        }
+        else
+        {
+            LibraryService.AddBook(title, author, isbn);
+        }
+
+        CancelEdit();
+
+    }
+
+    private void StartEdit(Book book)
+    {
+        editingBookId = book.Id;
+        title = book.Title;
+        author = book.Author;
+        isbn = book.ISBN;
+        isEditing = true;
+    }
+
+    private void DeleteBook(int bookId)
+    {
+        LibraryService.DeleteBook(bookId);
+    }
+
+    private void CancelEdit()
+    {
+        title = "";
+        author = "";
+        isbn = "";
+        editingBookId = 0;
+        isEditing = false;
+    }
+
+}

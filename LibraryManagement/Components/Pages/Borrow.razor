@@ -1,0 +1,120 @@
+﻿@page "/borrow"
+@rendermode InteractiveServer
+@using LibraryManagement.Components.Services
+@inject LibraryService LibraryService
+
+<h3>Borrow A Book</h3>
+
+<div class="mb-3">
+    <label>Select Book:</label>
+    <select class="form-select" @bind="selectedBookId">
+        <option value="0">-- SELECT A BOOK --</option>
+
+        @foreach (var book in LibraryService.Books)
+        {
+            <option value="@book.Id">
+                @book.Title by @book.Author
+            </option>
+        }
+    </select>
+</div>
+
+<div class="mb-3">
+    <label>Select User:</label>
+    <select class="form-select" @bind="selectedUserId">
+        <option value="0">-- SELECT A USER --</option>
+
+        @foreach (var user in LibraryService.Users)
+        {
+            <option value="@user.Id">
+                @user.Name
+            </option>
+        }
+    </select>
+</div>
+
+<button class="btn btn-primary" @onclick="BorrowBook">
+    Borrow Book
+</button>
+
+<button class="btn btn-secondary mt-2" @onclick="ToggleBorrowedBooks">
+    @(showBorrowedBooks ? "Hide Borrowed Books" : "View Borrowed Books")
+</button>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <p class="mt-3">@message</p>
+}
+
+@if (showBorrowedBooks)
+{
+    <hr />
+
+    <h4>Currently Borrowed Books</h4>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>User Name</th>
+                <th>Book ID</th>
+                <th>Book Title</th>
+                <th>Author</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in LibraryService.BorrowedBooks)
+            {
+                var user = entry.Key;
+
+                @foreach (var book in entry.Value)
+                {
+                    <tr>
+                        <td>@user.Id</td>
+                        <td>@user.Name</td>
+                        <td>@book.Id</td>
+                        <td>@book.Title</td>
+                        <td>@book.Author</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private int selectedBookId = 0;
+    private int selectedUserId = 0;
+    private string message = "";
+    private bool showBorrowedBooks = false;
+
+    private void BorrowBook()
+    {
+        if (selectedBookId == 0 || selectedUserId == 0)
+        {
+            message = "Please select a book and a user.";
+            return;
+        }
+
+        bool success = LibraryService.BorrowBook(
+            selectedBookId, selectedUserId);
+
+        if (success)
+        {
+            message = "Book borrowed successfully!";
+            selectedBookId = 0;
+            selectedUserId = 0;
+        }
+        else
+        {
+            message = "Unable to borrow book.";
+        }
+    }
+
+    private void ToggleBorrowedBooks()
+    {
+        showBorrowedBooks = !showBorrowedBooks;
+    }
+
+}
