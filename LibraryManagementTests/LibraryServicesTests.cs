@@ -413,11 +413,11 @@ namespace LibraryManagementTests
             Assert.AreEqual(1, service.GetBorrowedBooks(userId).Count);
         }
 
-        [TestMethod]
+        /* [TestMethod]
         public void CI_Failure()
         {
             Assert.Fail("Test will intentionally fail to demonstrate CI detecting a failed test.");
-        }
+        }*/
 
         private class TestEnvironment : IWebHostEnvironment
         {
